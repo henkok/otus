@@ -1,0 +1,35 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure(2) do |config|
+  config.vm.box = "centos/7"
+
+  config.vm.provider "virtualbox" do |v|
+    v.memory = 256
+    v.cpus = 1
+  end
+  
+  config.vm.provider "virtualbox" do |kafka|
+    kafka.memory = 2048
+    kafka.cpus = 2
+  end
+
+  config.vm.define "logmonitoring" do |log|
+    log.vm.network "private_network", ip: "192.168.50.10", virtualbox__intnet: "net1"
+    log.vm.hostname = "logmonitoring"
+    log.vm.provision "shell", path: "scriptshw8/logmonitoring.sh"
+  end
+
+  config.vm.define "apache" do |apache|
+    apache.vm.network "private_network", ip: "192.168.50.11", virtualbox__intnet: "net1"
+    apache.vm.hostname = "apache"
+    apache.vm.provision "shell", path: "scriptshw8/apache.sh"
+  end
+  
+  config.vm.define "kafka" do |kafka|
+    kafka.vm.network "private_network", ip: "192.168.50.111", virtualbox__intnet: "net1"
+    kafka.vm.hostname = "kafka"
+    kafka.vm.provision "shell", path: "scriptshw8/kafka.sh"
+  end
+
+end
