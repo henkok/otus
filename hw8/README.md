@@ -21,5 +21,5 @@
 			- MemoryLimit=3G
 			- LimitCORE=infinity
 			- LimitNOFILE=65536
-		- Restart=on-abnormal - перезапускать автоматически, если выходит из строя ненормально
+		- Restart=on-abnormal - перезапускать автоматически, если выходит из строя нештатно
 
