@@ -1,0 +1,7 @@
+---
+- name: Configure nginx
+  hosts: nginx
+  become: True
+  roles:
+    - nginx
+...
