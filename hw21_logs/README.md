@@ -4,7 +4,7 @@
 
 ## Выбран rsyslog
 
-### Настройка сервера
+## Настройка сервера
 
 1. Установка
 ```
@@ -17,7 +17,7 @@
 ```
 [root@log ~]# vi /etc/rsyslog.conf
 ```
-## разрешаем запуск сервера на обоих протоколах TCP/UDP
+### разрешаем запуск сервера на обоих протоколах TCP/UDP
 ```
 # Provides UDP syslog reception
 $ModLoad imudp
@@ -27,7 +27,7 @@ $UDPServerRun 514
 $ModLoad imtcp
 $InputTCPServerRun 514
 ```
-## создание шаблона для сохранения логов
+### создание шаблона для сохранения логов
 ```
 $template RemoteLogs,"/var/log/rsyslog/%HOSTNAME%/%PROGRAMNAME%.log"
 *.* ?RemoteLogs
@@ -39,7 +39,7 @@ $template RemoteLogs,"/var/log/rsyslog/%HOSTNAME%/%PROGRAMNAME%.log"
 [root@log ~]# systemctl restart rsyslog
 ```
 
-### Настройка клиента
+## Настройка клиента
 
 - на сервер будут отправляться все логи 
 
