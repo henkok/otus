@@ -44,7 +44,7 @@ $template RemoteLogs,"/var/log/rsyslog/%HOSTNAME%/%PROGRAMNAME%.log"
 - на сервер будут отправляться все логи 
 
 1. Создание конфигурационного файла vi /etc/rsyslog.d/remote.conf
-# указан адрес сервера
+#### указан адрес сервера
 ```
 *.* @@192.168.145.148:514
 ```
