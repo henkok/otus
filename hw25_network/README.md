@@ -52,6 +52,8 @@ Office2----/
 
 ## Теоретическая часть
 
+![netmap](https://github.com/henkok/otus/blob/master/hw25_network/networkmap.png?raw=true)
+
 ### Для построения итогового стенда были взяты сети:
 #### конечные хосты:
 - 192.168.2.64/26 - TestServers Office1
