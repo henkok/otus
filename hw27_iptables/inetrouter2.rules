@@ -1,0 +1,17 @@
+*filter
+:INPUT ACCEPT [0:0]
+:FORWARD ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+-A FORWARD -d 192.168.0.2/32 -i eth1 -o eth2 -p tcp -m tcp --dport 80 -j ACCEPT
+COMMIT
+
+
+*nat
+:PREROUTING ACCEPT [0:0]
+:INPUT ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+:POSTROUTING ACCEPT [0:0]
+-A PREROUTING -d 10.1.2.10/32 -p tcp -m tcp --dport 8080 -j DNAT --to-destination 192.168.0.2:80
+-A OUTPUT -d 10.1.2.10/32 -p tcp -m tcp --dport 80 -j DNAT --to-destination 192.168.0.2
+-A POSTROUTING -d 192.168.0.2/32 -p tcp -m tcp --dport 80 -j SNAT --to-source 192.168.255.13
+COMMIT
