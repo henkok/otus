@@ -1,0 +1,94 @@
+---
+- name: Setup ospf
+  hosts: r1
+  become: yes
+  
+  vars:
+    router_name: 'r1'
+    eth2_cost: '10'
+    eth3_cost: '10'
+    router_id: '1.1.1.1'
+    area_0_network1: '192.168.255.0/30'
+    area_0_network2: '192.168.255.8/30'
+    area_cidr: '10.10.10.0/24'
+
+    
+  tasks:
+    - name: Add epel-release repo
+      yum:
+        name: epel-release
+        state: present
+        
+    - name: disable ssl for repo epel
+      lineinfile: 
+        dest: /etc/yum.repos.d/epel.repo
+        insertafter: 'enabled=1'
+        line: 'sslverify=0'
+
+    - name: Install quagga
+      yum:
+        name: quagga
+        state: present
+        
+    - name: Change SELinux to permissive mode
+      selinux:
+        policy: targeted
+        state: permissive
+
+    - name: Set ip_forward
+      sysctl:
+        name: net.ipv4.ip_forward
+        value: '1'
+        sysctl_set: yes
+        state: present
+        reload: yes
+
+    - name: Set rp_filter
+      sysctl:
+        name: net.ipv4.conf.all.rp_filter
+        value: '0'
+        sysctl_set: yes
+        state: present
+        reload: yes
+        
+        
+    - name: Set zebra conf
+      template:
+        src: templates/zebra.conf.j2
+        dest: /etc/quagga/zebra.conf
+        owner: root
+        group: root
+        mode: 0644
+      notify: restart zebra
+
+    - name: Set ospfd conf
+      template:
+        src: templates/ospfd.conf.j2
+        dest: /etc/quagga/ospfd.conf
+        owner: root
+        group: root
+        mode: 0644
+      notify: restart ospfd
+      
+    - name: daemon started
+      systemd:
+        name: zebra
+        state: started
+        enabled: yes
+
+       
+    - name: demon started
+      systemd:
+        name: ospfd
+        state: started
+        enabled: yes
+        
+  handlers:
+  - name: restart zebra
+    service:
+      name: zebra
+      state: restarted
+  - name: restart ospfd
+    service:
+      name: ospfd
+      state: restarted
