@@ -15,7 +15,7 @@
   
   Карта:
 
- ![Image 1]( ) 
+ ![Image 1](https://github.com/henkok/otus/blob/master/hw_29_OSPF/OSPF.png?raw=true) 
  
 
 ## Проверка:
