@@ -1,0 +1,93 @@
+---
+- hosts: all
+  become: true
+  tasks:
+  - name: install packages
+    yum:
+      state: latest 
+      name:
+        - bind
+        - bind-utils
+        - ntp
+        - libsemanage-python
+
+
+
+
+      
+- hosts: ns01
+  become: true
+  tasks:
+  
+
+  - name: copy named.conf
+    copy: src=master-named.conf dest=/etc/named.conf owner=root group=named mode=0640
+
+  - name: copy zones
+    copy: src={{ item }} dest=/etc/named/ owner=root group=named mode=0660
+    with_fileglob:
+      - named.d*
+
+  - name: copy resolv.conf to the servers
+    copy: src=servers-resolv.conf dest=/etc/resolv.conf owner=root group=root mode=0644
+  
+  - name: set /etc/named permissions
+    file: path=/etc/named owner=root group=named mode=0670
+
+  - name: selinux
+    sefcontext:
+      target: '/etc/named(/.*)?'
+      setype: named_zone_t
+      state: present
+      reload: yes
+    register: selinux
+    
+  - name: apply named 
+    shell: |
+      restorecon -Rv /etc/named
+    when: selinux.changed
+
+
+  - name: ensure named is running and enabled
+    service: name=named state=restarted enabled=yes
+
+    
+- hosts: ns02
+  become: true
+  tasks:
+ 
+ 
+  - name: copy named.conf
+    copy: src=slave-named.conf dest=/etc/named.conf owner=root group=named mode=0640
+  - name: copy resolv.conf to the servers
+    copy: src=servers-resolv.conf dest=/etc/resolv.conf owner=root group=root mode=0644
+
+  - name: selinux permissions
+    file: path=/etc/named owner=root group=named mode=0670
+
+  - name: selinux
+    sefcontext:
+      target: '/etc/named(/.*)?'
+      setype: named_zone_t
+      state: present
+      reload: yes
+    register: selinux
+    
+  - name: apply named
+    shell: |
+      restorecon -Rv /etc/named
+    when: selinux.changed
+    
+    
+  - name: ensure named is running and enabled
+    service: name=named state=restarted enabled=yes
+    
+- hosts: all
+  become: true
+  tasks:
+  - name: copy resolv.conf
+    copy: src=client-resolv.conf dest=/etc/resolv.conf owner=root group=root mode=0644
+  - name: copy rndc
+    copy: src=rndc.conf dest=/home/vagrant/rndc.conf owner=vagrant group=vagrant mode=0644
+  - name: copy motd
+    copy: src=client-motd dest=/etc/motd owner=root group=root mode=0644
