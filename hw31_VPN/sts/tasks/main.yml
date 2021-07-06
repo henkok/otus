@@ -1,0 +1,59 @@
+---
+- name: 'Install epel-release'
+  yum:
+    name: epel-release
+    state: present
+
+- name: 'Install packages on server'
+  yum:
+    name:
+      - openvpn
+      - easy-rsa
+      - iperf3
+      - tcpdump
+      - policycoreutils-python
+    state: present
+  when: (ansible_hostname == 'server')
+
+- name: 'Install packages on client'
+  yum:
+    name:
+      - openvpn
+      - iperf3
+    state: present
+  when: (ansible_hostname == 'client')
+
+- name: 'Copy config for loopback'
+  template:
+    src: ifcfg-lo.2.j2
+    dest: /etc/sysconfig/network-scripts/ifcfg-lo.2
+  notify:
+    - restart network
+  
+- name: 'Enable forwarding'
+  copy:
+    src: ip_forwarding.conf
+    dest: /etc/sysctl.d/
+  notify:
+    - restart network
+
+- name: 'Copy secret key'
+  copy:
+    src: static.key
+    dest: /etc/openvpn/
+
+- name: 'Copy server.conf to server'
+  template:
+    src: server-server.conf.j2
+    dest: /etc/openvpn/server.conf
+  when: (ansible_hostname == 'server')
+  notify:
+    - restart server
+
+- name: 'Copy server.conf to client'
+  template:
+    src: server-client.conf.j2
+    dest: /etc/openvpn/server.conf
+  when: (ansible_hostname == 'client')
+  notify:
+    - restart server
