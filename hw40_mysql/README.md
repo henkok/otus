@@ -32,5 +32,5 @@ SELECT * FROM bookmaker;
 
 Скрин:
 
-![Img_alt](https://github.com/.png)
+![Img_alt](https://raw.githubusercontent.com/henkok/otus/master/hw40_mysql/mysql.png)
 
