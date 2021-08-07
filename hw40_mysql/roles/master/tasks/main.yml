@@ -1,0 +1,89 @@
+---
+- name: Repo Percona
+  yum:
+    name: https://repo.percona.com/yum/percona-release-latest.noarch.rpm
+    state: present
+
+- name: Install Percona
+  yum:
+    name:
+      - Percona-Server-server-57
+      - percona-toolkit
+      - percona-xtrabackup
+      - MySQL-python
+    state: present
+
+- name: configs
+  copy:
+    src: "{{ item }}"
+    dest: /etc/my.cnf.d/
+  with_fileglob: "*.cnf"
+
+- name: Stop mysqld
+  service:
+    name: mysqld
+    state: stopped
+
+- name: Set environment
+  command: systemctl set-environment MYSQLD_OPTS="--skip-grant-tables"
+
+- name: Start mysqld
+  service:
+    name: mysqld
+    state: started
+
+- name: UPDATE mysql.user
+  command:  mysql -u root --execute="UPDATE mysql.user SET authentication_string = PASSWORD('{{ mysql_password }}') WHERE User = 'root' AND Host = 'localhost';"
+
+
+- name: Stop mysqld
+  service:
+    name: mysqld
+    state: stopped
+
+- name: Unset environment
+  command: systemctl unset-environment MYSQLD_OPTS
+
+- name: Start mysqld
+  service:
+    name: mysqld
+    state: started
+    enabled: yes
+
+- name: Copy .my.cnf config
+  template:
+    src: root.my.cnf.j2
+    dest: /root/.my.cnf
+    owner: root
+    group: root
+    mode: 0600
+
+- name: root pass
+  command: mysql --connect-expired-password --batch --execute="{{ item }}"
+  with_items:
+    - ALTER USER 'root'@'localhost' IDENTIFIED BY '{{ mysql_password }}';
+
+- name: Create user
+  mysql_user:
+    login_user: root
+    login_password: "{{ mysql_password }}"
+    name: "{{ replic_user }}"
+    password: "{{ replic_password }}"
+    host: '%'
+    priv: '*.*:ALL'
+    state: present
+
+- name: Create database - bet
+  mysql_db:
+    login_user: root
+    login_password: "{{ mysql_password }}"
+    name: bet
+    state: present
+
+- name: Import database - bet
+  mysql_db:
+    login_user: root
+    login_password: "{{ mysql_password }}"
+    name: bet
+    state: import
+    target: /vagrant/bet.dmp
